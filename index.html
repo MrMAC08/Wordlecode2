@@ -3,19 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Structured Literacy Wordle</title>
+  <title>Structured Literacy Wordle - Suffix Focus</title>
   <style>
     * { box-sizing: border-box; }
     body { font-family: 'Clear Sans', 'Helvetica Neue', Arial, sans-serif; display: flex; flex-direction: column; align-items: center; background: #121213; color: white; margin: 0; padding: 15px; min-height: 100vh; justify-content: space-between; }
-    h1 { margin: 0 0 10px 0; font-size: 2rem; letter-spacing: 0.1rem; border-bottom: 1px solid #3a3a3c; width: 100%; text-align: center; padding-bottom: 10px; }
-    #game-container { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 900px; }
+    h1 { margin: 0 0 5px 0; font-size: 2rem; letter-spacing: 0.1rem; border-bottom: 1px solid #3a3a3c; width: 100%; text-align: center; padding-bottom: 5px; }
+    #game-container { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; max-width: 900px; }
     button { background: #538d4e; color: white; border: none; padding: 12px 24px; font-weight: bold; cursor: pointer; border-radius: 5px; font-size: 1rem; text-transform: uppercase; }
     button:hover { background: #6aaa64; }
     
+    /* Clue Box Styling */
+    #clue-box { background-color: #1e293b; border: 1px solid #38bdf8; color: #e2e8f0; padding: 10px 15px; border-radius: 6px; font-size: 0.95rem; text-align: center; max-width: 600px; width: 100%; min-height: 48px; display: flex; align-items: center; justify-content: center; }
+    #clue-box span { color: #38bdf8; font-weight: bold; margin-right: 6px; }
+
     /* Dynamic Grid Styling */
-    .grid { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; width: 100%; align-items: center; }
+    .grid { display: flex; flex-direction: column; gap: 5px; margin-bottom: 5px; width: 100%; align-items: center; }
     .row { display: flex; gap: 5px; justify-content: center; }
-    .tile { width: 42px; height: 42px; border: 2px solid #3a3a3c; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; font-weight: bold; text-transform: uppercase; user-select: none; cursor: pointer; transition: transform 0.15s ease-in-out, background-color 0.2s, border-color 0.2s; }
+    .tile { width: 44px; height: 44px; border: 2px solid #3a3a3c; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; text-transform: uppercase; user-select: none; cursor: pointer; transition: transform 0.15s ease-in-out, background-color 0.2s, border-color 0.2s; }
     
     /* Active word length vs Dark gray extra boxes */
     .tile.active-box { background-color: #1e293b; border: 2px solid #38bdf8; }
@@ -51,6 +55,7 @@
   <h1>WORDLE</h1>
 
   <div id="game-container">
+    <div id="clue-box"><span>Clue:</span> Loading clue...</div>
     <div id="message">Loading Dictionary...</div>
 
     <div id="grid" class="grid"></div>
@@ -97,46 +102,42 @@
 
   <script>
     /* ------------------------------------------------------------------
-       TEACHER SETUP: Suffix words (-tion, -sion, -cian)
+       TEACHER SETUP: 
+       - Words ending in -TION, -SION, -CIAN
+       - Clues give non-obvious starting letter combinations to scaffold difficulty
     ------------------------------------------------------------------ */
-    const SECRET_WORDS = [
-      "CELEBRATION",
-      "POLLUTION",
-      "INSPIRATION",
-      "CONSIDERATION",
-      "IMAGINATION",
-      "ACTION",
-      "CONDITION",
-      "INVITATION",
-      "COMPETITION",
-      "COLLISION",
-      "DIVISION",
-      "CONFUSION",
-      "EXTENSION",
-      "EXPLOSION",
-      "TELEVISION",
-      "PERSUASION",
-      "SUSPENSION",
-      "DECISION",
-      "MUSICIAN",
-      "POLITICIAN",
-      "MAGICIAN",
-      "ELECTRICIAN",
-      "OPTICIAN",
-      "TECHNICIAN",
-      "BEAUTICIAN",
-      "DIETICIAN",
-      "PHYSICIAN"
+    const WORD_DATA = [
+      { word: "POPULATION", clue: "Total number of inhabitants living in a region. Starts with 'PO'." },
+      { word: "ACTION", clue: "The process of doing something or taking initiative. Starts with 'AC'." },
+      { word: "DECISION", clue: "A conclusion or judgment reached after consideration. Starts with 'DE'." },
+      { word: "MUSICIAN", clue: "A person who plays, composes, or conducts music. Starts with 'MU'." },
+      { word: "EXPLOSION", clue: "A violent expansion in which energy is released outward. Starts with 'EX'." },
+      { word: "MAGICIAN", clue: "An entertainer skilled in performing sleight of hand. Starts with 'MA'." },
+      { word: "CONDITION", clue: "The state of something with regard to its appearance or health. Starts with 'CO'." },
+      { word: "DIVISION", clue: "The act of separating something into parts or groups. Starts with 'DI'." },
+      { word: "POLITICIAN", clue: "A person professionally involved in government governance. Starts with 'PO'." },
+      { word: "INVITATION", clue: "A request asking someone to go somewhere or do something. Starts with 'IN'." },
+      { word: "CONFUSION", clue: "Uncertainty or lack of clarity about a situation. Starts with 'CO'." },
+      { word: "OPTICIAN", clue: "A professional who fits and sells corrective eyeglasses. Starts with 'OP'." },
+      { word: "POLLUTION", clue: "The presence of harmful or poisonous substances in the environment. Starts with 'PO'." },
+      { word: "EXTENSION", clue: "An addition to increase space, range, or available time. Starts with 'EX'." },
+      { word: "PHYSICIAN", clue: "A person qualified to practice medicine and heal patients. Starts with 'PH'." },
+      { word: "CELEBRATION", clue: "A joyful social gathering held to mark an important event. Starts with 'CE'." },
+      { word: "PERSUASION", clue: "The action of convincing someone to do or believe something. Starts with 'PE'." },
+      { word: "TECHNICIAN", clue: "An expert in operational equipment or scientific techniques. Starts with 'TE'." },
+      { word: "COLLISION", clue: "An instance of one moving object striking violently against another. Starts with 'CO'." },
+      { word: "SUSPENSION", clue: "The temporary prevention of something or a state of delay. Starts with 'SU'." }
     ];
 
-    const MAX_GRID_SIZE = 13; // Max row size based on longest word (CONSIDERATION)
+    const MAX_GRID_SIZE = 13;
 
     let wordList = [];
+    let currentWordObj = null;
     let targetWord = "";
     let wordLength = 6;
-    let startIndex = 0; // Index where active boxes start
+    let startIndex = 0;
     let currentRow = 0;
-    let currentTile = 0; // Relative to active word length (0 to wordLength - 1)
+    let currentTile = 0;
     let guesses = [];
     let gameOver = false;
     let fullDictionary = new Set();
@@ -165,22 +166,30 @@
     initDictionary();
 
     function startGame() {
-      wordList = SECRET_WORDS.map(w => w.trim().toUpperCase()).sort(() => Math.random() - 0.5);
-      wordList.forEach(w => fullDictionary.add(w));
+      wordList = WORD_DATA.map(item => ({
+        word: item.word.trim().toUpperCase(),
+        clue: item.clue
+      })).sort(() => Math.random() - 0.5);
+
+      wordList.forEach(item => fullDictionary.add(item.word));
       nextWord();
     }
 
     function nextWord() {
       if (wordList.length === 0) {
         showMessage("Game Over! All words solved.", 0);
+        document.getElementById('clue-box').innerHTML = "<span>Clue:</span> All puzzles complete!";
         document.getElementById('next-btn').classList.add('hidden');
         return;
       }
 
-      targetWord = wordList.pop();
+      currentWordObj = wordList.pop();
+      targetWord = currentWordObj.word;
       wordLength = targetWord.length;
       
-      // Calculate leading dark boxes so active boxes align right
+      // Update Clue Box
+      document.getElementById('clue-box').innerHTML = `<span>Clue:</span> ${currentWordObj.clue}`;
+
       startIndex = MAX_GRID_SIZE - wordLength;
       
       currentRow = 0;
@@ -217,7 +226,6 @@
           
           if (j >= startIndex) {
             tile.classList.add('active-box');
-            // Allow clicking any box in the current active row
             tile.onclick = () => {
               if (i === currentRow && !gameOver) {
                 selectTile(j - startIndex);
@@ -240,12 +248,10 @@
     }
 
     function highlightSelectedTile() {
-      // Remove selection highlights from current row
       for (let j = 0; j < wordLength; j++) {
         const tile = document.getElementById(`tile-${currentRow}-${startIndex + j}`);
         if (tile) tile.classList.remove('selected');
       }
-      // Highlight the currently selected box
       if (currentTile >= 0 && currentTile < wordLength) {
         const activeTile = document.getElementById(`tile-${currentRow}-${startIndex + currentTile}`);
         if (activeTile) activeTile.classList.add('selected');
@@ -282,7 +288,6 @@
         tile.innerText = letter;
         tile.setAttribute('data-state', 'active');
         
-        // Auto-advance selection to next box if available
         if (currentTile < wordLength - 1) {
           currentTile++;
         }
@@ -295,13 +300,11 @@
         const currentBoxVal = guesses[currentRow][currentTile];
         
         if (currentBoxVal !== "") {
-          // Clear current box if it has a letter
           guesses[currentRow][currentTile] = "";
           const tile = document.getElementById(`tile-${currentRow}-${startIndex + currentTile}`);
           tile.innerText = "";
           tile.removeAttribute('data-state');
         } else if (currentTile > 0) {
-          // If current box is empty, move back one box and clear it
           currentTile--;
           guesses[currentRow][currentTile] = "";
           const tile = document.getElementById(`tile-${currentRow}-${startIndex + currentTile}`);
@@ -319,7 +322,6 @@
     }
 
     function submitGuess() {
-      // Check if all boxes in the row are filled
       for (let i = 0; i < wordLength; i++) {
         if (!guesses[currentRow][i]) {
           showMessage("Fill all letters");
@@ -336,7 +338,6 @@
         return;
       }
 
-      // Clear highlighted selection border before flip
       highlightSelectedTile();
       const currentSelectedTile = document.getElementById(`tile-${currentRow}-${startIndex + currentTile}`);
       if (currentSelectedTile) currentSelectedTile.classList.remove('selected');
